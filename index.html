@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青畴智耘 - 智慧农业大棚系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#22c55e',    // 主色调：生机绿
+                        secondary: '#0ea5e9',  // 辅助色：科技蓝
+                        accent: '#f59e0b',     // 强调色：活力橙
+                        dark: '#1e293b',       // 深色文本
+                        light: '#f8fafc'       // 浅色背景
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['"Noto Serif SC"', 'serif']
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .text-shadow-lg {
+                text-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+            }
+            .bg-gradient-agri {
+                background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            }
+            .animate-float {
+                animation: float 6s ease-in-out infinite;
+            }
+            .animate-pulse-slow {
+                animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+    
+    <!-- 引入中文字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gradient-agri min-h-screen overflow-x-hidden font-sans text-dark">
+    <!-- 右侧固定跳转按钮 -->
+    <a href="中间页面15.0.0.html" class="fixed right-6 top-1/2 -translate-y-1/2 z-40 bg-primary/40 hover:bg-primary/80 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
+        <i class="fa fa-arrow-right text-xl"></i>
+    </a>
+
+    <!-- 顶部导航栏 -->
+    <header class="fixed w-full top-0 z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <i class="fa fa-leaf text-primary text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-display font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">青畴智耘</h1>
+            </div>
+            
+            <!-- 桌面端导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-dark/80 hover:text-primary transition-colors font-medium">功能介绍</a>
+                <a href="#tech" class="text-dark/80 hover:text-primary transition-colors font-medium">核心技术</a>
+                <a href="#showcase" class="text-dark/80 hover:text-primary transition-colors font-medium">应用案例</a>
+                <a href="#contact" class="text-dark/80 hover:text-primary transition-colors font-medium">联系我们</a>
+                <a href="中间页面15.0.0.html" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-full transition-all shadow-md hover:shadow-lg">
+                    进入系统
+                </a>
+            </nav>
+            
+            <!-- 移动端导航链接 - 保持原始样式，不使用下拉菜单 -->
+            <div class="md:hidden flex items-center">
+                <a href="#features" class="text-dark/80 hover:text-primary transition-colors px-2">功能介绍</a>
+                <a href="#tech" class="text-dark/80 hover:text-primary transition-colors px-2">核心技术</a>
+                <a href="#showcase" class="text-dark/80 hover:text-primary transition-colors px-2">应用案例</a>
+                <a href="#contact" class="text-dark/80 hover:text-primary transition-colors px-2">联系我们</a>
+                <a href="中间页面15.0.0.html" class="bg-primary/90 hover:bg-primary text-white px-3 py-1 rounded-full text-sm ml-2">
+                    进入
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主视觉区域 -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 relative overflow-hidden">
+        <!-- 装饰元素 -->
+        <div class="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 rounded-full blur-3xl"></div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <!-- 文本内容 -->
+                <div class="lg:w-1/2 space-y-8">
+                    <div class="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
+                        智慧农业解决方案
+                    </div>
+                    
+                    <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-display font-bold leading-tight text-shadow-lg">
+                        科技赋能<br>
+                        <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            重塑现代农业
+                        </span>
+                    </h1>
+                    
+                    <p class="text-lg text-dark/70 max-w-lg">
+                        青畴智耘通过涂鸦科技云平台、物联网通信，实现农业大棚环境智能监控、精准种植和自动化管理，提升作物产量与品质。
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                        <a href="中间页面15.0.0.html" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-full transition-all shadow-lg hover:shadow-xl text-center font-medium text-lg">
+                            开始体验
+                        </a>
+                        <a href="#features" class="bg-white border border-gray-200 hover:border-primary text-dark hover:text-primary px-8 py-4 rounded-full transition-all shadow-md hover:shadow-lg text-center font-medium text-lg">
+                            了解更多 <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 信任标识 -->
+                    <div class="pt-6">
+                        <p class="text-sm text-dark/50 mb-4">开启智慧种植新篇章</p>
+                        <div class="flex flex-wrap items-center gap-8 opacity-70">
+                            <div class="text-dark/40 text-xl font-bold">农业科技</div>
+                            <div class="text-dark/40 text-xl font-bold">生态农业</div>
+                            <div class="text-dark/40 text-xl font-bold">涂鸦智能</div>
+                            <div class="text-dark/40 text-xl font-bold">万物互联</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 主视觉图片 -->
+                <div class="lg:w-1/2 relative">
+                    <div class="relative z-10 animate-float">
+                        <img src="./登录图片/农业大棚.png" alt="智慧农业大棚监控系统" class="rounded-2xl shadow-2xl w-full object-cover h-[500px]">
+                        
+                        <!-- 悬浮数据卡片1 -->
+                        <div class="absolute -top-6 -left-6 bg-white p-4 rounded-xl shadow-xl animate-pulse-slow hidden md:block">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                    <i class="fa fa-thermometer-half text-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-dark/50">空气温度</p>
+                                    <p class="text-xl font-bold">26.5°C</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 悬浮数据卡片2 -->
+                        <div class="absolute -bottom-4 -right-4 bg-white p-4 rounded-xl shadow-xl animate-pulse-slow hidden md:block" style="animation-delay: 1s">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <i class="fa fa-tint text-secondary text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-dark/50">土壤湿度</p>
+                                    <p class="text-xl font-bold">68%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 底部行动召唤区 -->
+    <section class="py-20 bg-primary/5" id="contact">
+        <div class="container mx-auto px-4">
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+                <div class="flex flex-col lg:flex-row">
+                    <div class="lg:w-1/2 p-10 md:p-16 flex flex-col justify-center">
+                        <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-display font-bold mb-6">
+                            开启智慧农业新篇章
+                        </h2>
+                        <p class="text-lg text-dark/70 mb-8">
+                            立即联系我们，获取专属智慧农业大棚解决方案，让科技为您的农业生产提质增效。
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="中间页面15.0.0.html" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-full transition-all shadow-lg hover:shadow-xl text-center font-medium text-lg">
+                                免费试用
+                            </a>
+                            <a href="tel:4001234567" class="bg-white border border-gray-200 hover:border-primary text-dark hover:text-primary px-8 py-4 rounded-full transition-all shadow-md hover:shadow-lg text-center font-medium text-lg flex items-center justify-center">
+                                <i class="fa fa-phone mr-2"></i> 400-123-4567
+                            </a>
+                        </div>
+                    </div>
+                    <div class="lg:w-1/2 h-64 lg:h-auto relative">
+                        <img src="https://picsum.photos/id/292/800/600" alt="智慧农业咨询" class="absolute inset-0 w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                            <i class="fa fa-leaf text-primary text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-display font-bold">青畴智耘</h3>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        专注于智慧农业技术研发与应用，为现代农业提供全方位智能化解决方案。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-colors flex items-center justify-center">
+                            <i class="fa fa-weixin"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-colors flex items-center justify-center">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-colors flex items-center justify-center">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-6">快速链接</h4>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">首页</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-primary transition-colors">功能介绍</a></li>
+                        <li><a href="#tech" class="text-gray-400 hover:text-primary transition-colors">核心技术</a></li>
+                        <li><a href="#showcase" class="text-gray-400 hover:text-primary transition-colors">应用案例</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-primary transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-6">解决方案</h4>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">温室大棚智能化</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">大田种植管理</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">畜禽养殖监控</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">水产养殖系统</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">农业物联网平台</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-6">联系我们</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-map-marker text-primary mt-1 mr-4"></i>
+                            <span class="text-gray-400">农业科技园A座101室</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-phone text-primary mr-4"></i>
+                            <span class="text-gray-400">400-123-4567</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope text-primary mr-4"></i>
+                            <span class="text-gray-400">contact@qingchou.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
+                <p>&copy; 2023 青畴智耘 智慧农业大棚系统 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-white', 'shadow-md');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.remove('bg-white', 'shadow-md');
+                navbar.classList.add('bg-transparent');
+            }
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

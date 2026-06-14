@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青畴智耘 - 智慧农业大棚系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- 配置Tailwind主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#22c55e',    // 主色调：生机绿
+                        secondary: '#0ea5e9',  // 辅助色：科技蓝
+                        accent: '#f59e0b',     // 强调色：活力橙
+                        dark: '#1e293b',       // 深色文本
+                        light: '#f8fafc'       // 浅色背景
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['"Noto Serif SC"', 'serif']
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类和样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            }
+            .slide-up {
+                animation: slideUp 0.6s ease forwards;
+                opacity: 0;
+            }
+            @keyframes slideUp {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            .hover-lift {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .hover-lift:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            }
+            .pulse-animation {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+            .value-changing {
+                animation: valueChange 1s ease;
+            }
+            @keyframes valueChange {
+                0% {
+                    color: #22c55e;
+                    transform: scale(1);
+                }
+                50% {
+                    color: #0ea5e9;
+                    transform: scale(1.1);
+                }
+                100% {
+                    color: #22c55e;
+                    transform: scale(1);
+                }
+            }
+            .field-status-good {
+                background-color: rgba(34, 197, 94, 0.1);
+                color: #22c55e;
+            }
+            .field-status-warning {
+                background-color: rgba(245, 158, 11, 0.1);
+                color: #f59e0b;
+            }
+            .field-status-alert {
+                background-color: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+            }
+            .status-normal {
+                background-color: rgba(34, 197, 94, 0.1);
+                color: #22c55e;
+            }
+            .status-warning {
+                background-color: rgba(245, 158, 11, 0.1);
+                color: #f59e0b;
+            }
+            .status-alert {
+                background-color: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+            }
+            .tab-active {
+                color: #22c55e;
+                border-bottom: 2px solid #22c55e;
+            }
+            .card-click-effect {
+                transition: transform 0.1s ease;
+            }
+            .card-click-effect:active {
+                transform: scale(0.98);
+            }
+            /* 扩展点击区域容器 */
+            .click-area-container {
+                position: relative;
+                padding: 1cm; /* 1厘米的额外点击区域 */
+                margin: -1cm; /* 抵消padding带来的布局偏移 */
+            }
+            .card-inner {
+                position: relative; /* 确保卡片内容在点击区域上方 */
+            }
+            /* 滑入动画 */
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        }
+    </style>
+    
+    <!-- 引入中文字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- 跳转按钮样式 -->
+    <style>
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: rgba(34, 197, 94, 0.4); /* 40%透明度的主色调 */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 40; /* 确保在内容上方但不遮挡导航栏 */
+            transform: translateY(-50%);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-arrow:hover {
+            background-color: rgba(34, 197, 94, 0.8); /* 悬停时80%透明度 */
+            transform: translateY(-50%) scale(1.1); /* 悬停时轻微放大 */
+        }
+        
+        .nav-arrow-left {
+            left: 16px;
+        }
+        
+        .nav-arrow-right {
+            right: 16px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen font-sans text-dark">
+    <div class="time-status-bar fixed top-0 left-0 right-0 bg-dark text-white text-sm py-1 px-4 flex items-center justify-center z-40" id="real-time-clock">
+        <i class="fa fa-clock-o"></i>
+        <span id="current-date"></span>
+        <span class="mx-2">|</span>
+        <span id="current-time"></span>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md fixed w-full top-0 z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-leaf text-primary text-2xl"></i>
+                <h1 class="text-[clamp(1.2rem,3vw,1.8rem)] font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">青畴智耘</h1>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#real-time-monitoring" class="text-primary font-medium hover:text-primary/80 transition-colors">实时监控数据</a>
+                <a href="数据表格6.0.0.html" class="text-gray-600 font-medium hover:text-primary transition-colors">农田数据分析</a>
+                <a href="#data-trends" class="text-gray-600 font-medium hover:text-primary transition-colors">数据趋势</a>
+            </div>
+            
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-gray-600 hover:text-primary transition-colors">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t animate-fade-in">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#real-time-monitoring" class="py-2 text-primary font-medium">实时监控数据</a>
+                <a href="数据表格6.0.0.html" class="py-2 text-gray-600 font-medium hover:text-primary transition-colors">农田数据分析</a>
+                <a href="#data-trends" class="py-2 text-gray-600 font-medium hover:text-primary transition-colors">数据趋势</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 pt-24 pb-16">
+        <!-- 状态概览 -->
+        <section id="real-time-monitoring" class="mb-12">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-dark">实时监控数据</h2>
+                
+                <!-- 农田选择器 -->
+                <div class="flex items-center space-x-4 w-full sm:w-auto">
+                    <span class="text-gray-600">选择农田：</span>
+                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                        <button type="button" class="farm-select-btn px-4 py-2 text-sm font-medium text-white bg-primary rounded-l-lg hover:bg-primary/90 focus:z-10 focus:ring-2 focus:ring-primary focus:text-white" data-farm="A">
+                            农田 A
+                        </button>
+                        <button type="button" class="farm-select-btn px-4 py-2 text-sm font-medium text-gray-500 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary" data-farm="B">
+                            农田 B
+                        </button>
+                        <button type="button" class="farm-select-btn px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-200 rounded-r-lg hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary" data-farm="C">
+                            农田 C
+                        </button>
+                    </div>
+                    
+                    <div class="bg-green-100 text-primary px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                        <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-2 pulse-animation"></span>
+                        数据同步中
+                    </div>
+                </div>
+            </div>
+            
+            环境参数卡片
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-[calc(1rem+1cm)]">
+                <!-- 温度 -->
+                <div class="click-area-container" data-type="temperature">
+                    <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 slide-up card-inner card-click-effect" 
+                         style="animation-delay: 0.1s">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-gray-500 font-medium">空气温度</h3>
+                                <p class="text-3xl font-bold mt-1 farm-data" 
+                                   data-type="temperature" 
+                                   data-farm-a="22.0°C" 
+                                   data-farm-b="24.0°C" 
+                                   data-farm-c="23.0°C"
+                                   data-min="22"
+                                   data-max="28">22.0°C</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <i class="fa fa-thermometer-half text-red-500"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-yellow-400 to-red-500 h-2.5 rounded-full transition-all duration-500 ease-out farm-progress" 
+                                 data-type="temperature" 
+                                 style="width: 60%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">适宜范围: 22-28°C</p>
+                    </div>
+                </div>
+                
+                <!-- 湿度 -->
+                <div class="click-area-container" data-type="humidity">
+                    <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 slide-up card-inner card-click-effect" 
+                         style="animation-delay: 0.2s">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-gray-500 font-medium">空气湿度</h3>
+                                <p class="text-3xl font-bold mt-1 farm-data" 
+                                   data-type="humidity" 
+                                   data-farm-a="65%" 
+                                   data-farm-b="55%" 
+                                   data-farm-c="70%"
+                                   data-min="60"
+                                   data-max="80">65%</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="fa fa-tint text-blue-500"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-blue-300 to-blue-500 h-2.5 rounded-full transition-all duration-500 ease-out farm-progress" 
+                                 data-type="humidity" 
+                                 style="width: 10%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">适宜范围: 60-80%</p>
+                    </div>
+                </div>
+                
+                <!-- 土壤湿度 -->
+                <div class="click-area-container" data-type="soil">
+                    <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 slide-up card-inner card-click-effect" 
+                         style="animation-delay: 0.3s">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-gray-500 font-medium">土壤湿度</h3>
+                                <p class="text-3xl font-bold mt-1 farm-data" 
+                                   data-type="soil" 
+                                   data-farm-a="60%" 
+                                   data-farm-b="50%" 
+                                   data-farm-c="65%"
+                                   data-min="50"
+                                   data-max="70">60%</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                                <i class="fa fa-pagelines text-amber-600"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-amber-300 to-amber-500 h-2.5 rounded-full transition-all duration-500 ease-out farm-progress" 
+                                 data-type="soil" 
+                                 style="width: 40%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">适宜范围: 50-70%</p>
+                    </div>
+                </div>
+                
+                <!-- CO2浓度 -->
+                <div class="click-area-container" data-type="co2">
+                    <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 slide-up card-inner card-click-effect" 
+                         style="animation-delay: 0.4s">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-gray-500 font-medium">CO₂浓度</h3>
+                                <p class="text-3xl font-bold mt-1 farm-data" 
+                                   data-type="co2" 
+                                   data-farm-a="350 ppm" 
+                                   data-farm-b="380 ppm" 
+                                   data-farm-c="360 ppm"
+                                   data-min="300"
+                                   data-max="500">350 ppm</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                <i class="fa fa-cloud text-purple-500"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-purple-300 to-purple-500 h-2.5 rounded-full transition-all duration-500 ease-out farm-progress" 
+                                 data-type="co2" 
+                                 style="width: 29%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">适宜范围: 300-500 ppm</p>
+                    </div>
+                </div>
+                
+                <!-- 光照强度 -->
+                <div class="click-area-container" data-type="light">
+                    <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 slide-up card-inner card-click-effect" 
+                         style="animation-delay: 0.5s">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-gray-500 font-medium">光照强度</h3>
+                                <p class="text-3xl font-bold mt-1 farm-data" 
+                                   data-type="light" 
+                                   data-farm-a="1200 lux" 
+                                   data-farm-b="1000 lux" 
+                                   data-farm-c="1400 lux"
+                                   data-min="500"
+                                   data-max="2500">1200 lux</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                                <i class="fa fa-sun-o text-yellow-500"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-yellow-300 to-orange-400 h-2.5 rounded-full transition-all duration-500 ease-out farm-progress" 
+                                 data-type="light" 
+                                 style="width: 14.65%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">适宜范围: 500-2500 lux</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 农田数据分析模块 -->
+        <section id="field-analysis" class="mb-12 slide-up" style="animation-delay: 0.9s">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-dark">农田数据分析</h2>
+                <a href="数据表格6.0.0.html" class="text-primary hover:text-primary/80 transition-colors text-sm font-medium flex items-center">
+                    查看详情 <i class="fa fa-angle-right ml-1"></i>
+                </a>
+            </div>
+            
+            <!-- 三块农田数据卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="farm-analysis-cards">
+                <!-- 农田1 - 冬小麦 -->
+                <div class="farm-analysis-card bg-white rounded-xl overflow-hidden card-shadow hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" data-farm-id="1">
+                    <div class="h-40 bg-gradient-to-r from-green-500 to-green-600 relative overflow-hidden">
+                        <img class="crop-image w-full h-full object-cover opacity-50" src="./登录图片/冬小麦.jpg" alt="冬小麦田景观">
+                        <div class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-sm font-medium farm-label">
+                            农田 A-01
+                        </div>
+                        <div class="absolute bottom-4 right-4 field-status-good px-3 py-1 rounded-full text-sm font-medium growth-status">
+                            <i class="fa fa-check-circle mr-1"></i> 生长良好
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold crop-name">冬小麦</h3>
+                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full planting-days">已种植45天</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <p class="text-gray-500">当前温度</p>
+                                <p class="font-medium mt-1">25.3°C</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">土壤湿度</p>
+                                <p class="font-medium mt-1">68%</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">光照时间</p>
+                                <p class="font-medium mt-1">8.5小时</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">健康指数</p>
+                                <p class="font-medium text-green-600 mt-1">92/100</p>
+                            </div>
+                        </div>
+                        <a href="数据表格6.0.0.html?field=A-01" class="text-sm text-primary hover:text-primary/80 transition-colors flex justify-end">
+                            查看详细数据 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 农田2 - 小白菜 -->
+                <div class="farm-analysis-card bg-white rounded-xl overflow-hidden card-shadow hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" data-farm-id="2">
+                    <div class="h-40 bg-gradient-to-r from-green-500 to-green-600 relative overflow-hidden">
+                        <img class="crop-image w-full h-full object-cover opacity-50" src="./登录图片/小白菜.jpg" alt="小白菜田景观">
+                        <div class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-sm font-medium farm-label">
+                            农田 A-02
+                        </div>
+                        <div class="absolute bottom-4 right-4 field-status-warning px-3 py-1 rounded-full text-sm font-medium growth-status">
+                            <i class="fa fa-exclamation-circle mr-1"></i> 需要关注
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold crop-name">小白菜</h3>
+                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full planting-days">已种植18天</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <p class="text-gray-500">当前温度</p>
+                                <p class="font-medium mt-1">27.8°C</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">土壤湿度</p>
+                                <p class="font-medium mt-1">52%</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">光照时间</p>
+                                <p class="font-medium mt-1">7.2小时</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">健康指数</p>
+                                <p class="font-medium text-amber-600 mt-1">76/100</p>
+                            </div>
+                        </div>
+                        <a href="数据表格6.0.0.html?field=A-02" class="text-sm text-primary hover:text-primary/80 transition-colors flex justify-end">
+                            查看详细数据 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 农田3 - 小葱 -->
+                <div class="farm-analysis-card bg-white rounded-xl overflow-hidden card-shadow hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" data-farm-id="3">
+                    <div class="h-40 bg-gradient-to-r from-green-500 to-green-600 relative overflow-hidden">
+                        <img class="crop-image w-full h-full object-cover opacity-50" src="./登录图片/小葱.jpg" alt="小葱田景观">
+                        <div class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-sm font-medium farm-label">
+                            农田 B-01
+                        </div>
+                        <div class="absolute bottom-4 right-4 field-status-alert px-3 py-1 rounded-full text-sm font-medium growth-status">
+                            <i class="fa fa-warning mr-1"></i> 需要处理
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold crop-name">小葱</h3>
+                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full planting-days">已种植22天</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <p class="text-gray-500">当前温度</p>
+                                <p class="font-medium mt-1">28.5°C</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">土壤湿度</p>
+                                <p class="font-medium mt-1">45%</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">光照时间</p>
+                                <p class="font-medium mt-1">9.0小时</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">健康指数</p>
+                                <p class="font-medium text-amber-600 mt-1">76/100</p>
+                            </div>
+                        </div>
+                        <a href="数据表格6.0.0.html?field=B-01" class="text-sm text-primary hover:text-primary/80 transition-colors flex justify-end">
+                            查看详细数据 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据趋势模块 -->
+        <section id="data-trends" class="mb-12 slide-up" style="animation-delay: 1.2s">
+            <div class="bg-white rounded-xl p-6 card-shadow">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-dark">环境数据趋势</h2>
+                    
+                    <!-- 数据类型选择按钮 -->
+                    <div class="flex flex-wrap gap-2">
+                        <button class="chart-btn px-3 py-1 rounded-full text-sm bg-primary text-white hover:bg-primary/90 transition-colors" data-type="temperature">温度</button>
+                        <button class="chart-btn px-3 py-1 rounded-full text-sm bg-gray-100 hover:bg-gray-200 transition-colors" data-type="humidity">湿度</button>
+                        <button class="chart-btn px-3 py-1 rounded-full text-sm bg-gray-100 hover:bg-gray-200 transition-colors" data-type="soil">土壤湿度</button>
+                        <button class="chart-btn px-3 py-1 rounded-full text-sm bg-gray-100 hover:bg-gray-200 transition-colors" data-type="co2">二氧化碳</button>
+                        <button class="chart-btn px-3 py-1 rounded-full text-sm bg-gray-100 hover:bg-gray-200 transition-colors" data-type="light">光照</button>
+                    </div>
+                </div>
+                
+                <!-- 时间范围选项卡 -->
+                <div class="flex border-b mb-6">
+                    <button class="time-tab px-4 py-2 text-sm mr-2 tab-active transition-colors" data-range="hour">
+                        近一小时
+                    </button>
+                    <button class="time-tab px-4 py-2 text-sm mr-2 transition-colors" data-range="3days">
+                        近3天
+                    </button>
+                    <button class="time-tab px-4 py-2 text-sm mr-2 transition-colors" data-range="week">
+                        近7天
+                    </button>
+                    <button class="time-tab px-4 py-2 text-sm mr-2 transition-colors" data-range="15days">
+                        近15天
+                    </button>
+                    <button class="time-tab px-4 py-2 text-sm transition-colors" data-range="month">
+                        近30天
+                    </button>
+                </div>
+                
+                <div class="h-80">
+                    <canvas id="data-chart"></canvas>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-500">最高温</p>
+                        <p class="text-lg font-bold data-indicator" id="max-temperature">37.2°C</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-500">平均湿度</p>
+                        <p class="text-lg font-bold data-indicator" id="avg-humidity">65%</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-500">最高CO₂</p>
+                        <p class="text-lg font-bold data-indicator" id="max-co2">375 ppm</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-500">光照峰值</p>
+                        <p class="text-lg font-bold data-indicator" id="max-light">2350 lux</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-leaf text-primary text-xl"></i>
+                        <h3 class="text-lg font-bold">智慧农业大棚系统</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm">通过先进的物联网技术，实现农业大棚环境的智能监控与自动化管理，提高作物产量和质量。</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">快速链接</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#real-time-monitoring" class="hover:text-primary transition-colors">实时监控数据</a></li>
+                        <li><a href="数据表格6.0.0.html" class="hover:text-primary transition-colors">农田数据分析</a></li>
+                        <li><a href="#data-trends" class="hover:text-primary transition-colors">数据趋势</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">关于我们</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">联系我们</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center"><i class="fa fa-envelope-o mr-2"></i> support@qingchou.com</li>
+                        <li class="flex items-center"><i class="fa fa-phone mr-2"></i> 400-123-4567</li>
+                        <li class="flex items-center"><i class="fa fa-map-marker mr-2"></i> 北京市海淀区科技园</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
+                <p>&copy; 2023 青畴智耘 智慧农业大棚系统 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 跳转按钮 -->
+    <a href="中间页面15.0.0.html" class="nav-arrow nav-arrow-left">
+        <i class="fa fa-arrow-left"></i>
+    </a>
+
+    <a href="数据表格6.0.0.html" class="nav-arrow nav-arrow-right">
+        <i class="fa fa-arrow-right"></i>
+    </a>
+
+    <script>
+        // 实时时钟更新
+        function updateClock() {
+            const now = new Date();
+            
+            // 格式化日期
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('zh-CN', options);
+            
+            // 格式化时间
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('zh-CN', timeOptions);
+        }
+        
+        // 初始化时钟并每秒更新
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            const timeBar = document.getElementById('real-time-clock');
+            
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2', 'shadow-lg');
+                navbar.classList.remove('py-3', 'shadow-md');
+                timeBar.style.top = '54px';
+            } else {
+                navbar.classList.add('py-3', 'shadow-md');
+                navbar.classList.remove('py-2', 'shadow-lg');
+                timeBar.style.top = '60px';
+            }
+            
+            updateNavActiveState();
+        });
+        
+        function updateNavActiveState() {
+            const sections = ['real-time-monitoring', 'field-analysis', 'data-trends'];
+            const navLinks = document.querySelectorAll('.md\\:flex a, #mobile-menu a');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.top <= 200 && rect.bottom >= 200) {
+                        currentSection = section;
+                    }
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('text-primary');
+                link.classList.add('text-gray-600');
+                
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.remove('text-gray-600');
+                    link.classList.add('text-primary');
+                }
+            });
+        }
+        
+        // 移动端菜单切换
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 平滑滚动到锚点位置
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                    
+                    const navbarHeight = document.getElementById('navbar').offsetHeight;
+                    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // 计算进度条百分比的函数
+        function calculateProgress(value, min, max) {
+            // 确保值在有效范围内
+            value = Math.max(min, Math.min(max, value));
+            // 计算相对于范围的百分比
+            return ((value - min) / (max - min)) * 100;
+        }
+        
+        // 更新进度条显示
+        function updateProgressBar(element) {
+            // 获取数值和范围
+            const textValue = element.textContent;
+            // 提取数值（去除单位）
+            const value = parseFloat(textValue.replace(/[^0-9.]/g, ''));
+            const min = parseFloat(element.getAttribute('data-min'));
+            const max = parseFloat(element.getAttribute('data-max'));
+            const type = element.getAttribute('data-type');
+            
+            // 计算百分比
+            const percent = calculateProgress(value, min, max);
+            
+            // 更新对应的进度条
+            const progressBar = document.querySelector(`.farm-progress[data-type="${type}"]`);
+            if (progressBar) {
+                progressBar.style.width = `${percent}%`;
+            }
+        }
+        
+        // 农田选择功能
+        function initFarmSelection() {
+            const farmButtons = document.querySelectorAll('.farm-select-btn');
+            let currentFarm = 'A'; // 默认选中农田A
+            
+            // 为每个农田选择按钮添加点击事件
+            farmButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新按钮样式
+                    farmButtons.forEach(btn => {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('bg-white', 'text-gray-500');
+                    });
+                    this.classList.add('bg-primary', 'text-white');
+                    this.classList.remove('bg-white', 'text-gray-500');
+                    
+                    // 更新当前选中的农田
+                    currentFarm = this.getAttribute('data-farm');
+                    
+                    // 更新显示的数据
+                    updateFarmData(currentFarm);
+                    
+                    // 触发图表更新
+                    updateChartForFarm(currentFarm);
+                });
+            });
+            
+            // 更新农田数据显示
+            function updateFarmData(farm) {
+                // 更新所有数据值
+                document.querySelectorAll('.farm-data').forEach(element => {
+                    const type = element.getAttribute('data-type');
+                    const value = element.getAttribute(`data-farm-${farm.toLowerCase()}`);
+                    
+                    if (value) {
+                        element.textContent = value;
+                        element.classList.add('value-changing');
+                        
+                        // 更新进度条
+                        updateProgressBar(element);
+                        
+                        // 移除动画类，以便下次动画能重新触发
+                        setTimeout(() => {
+                            element.classList.remove('value-changing');
+                        }, 1000);
+                    }
+                });
+            }
+            
+            // 初始化显示农田A的数据
+            updateFarmData(currentFarm);
+            
+            return {
+                getCurrentFarm: () => currentFarm
+            };
+        }
+        
+        // 实时数据更新功能
+        function initRealTimeData(farmSelector) {
+            // 各参数的范围、最小/最大变化值
+            const params = {
+                temperature: {
+                    min: 15,
+                    max: 35,
+                    minStep: 0.1,
+                    maxStep: 0.5,
+                    unit: '°C'
+                },
+                humidity: {
+                    min: 30,
+                    max: 95,
+                    minStep: 1,
+                    maxStep: 3,
+                    unit: '%'
+                },
+                soil: {
+                    min: 20,
+                    max: 85,
+                    minStep: 1,
+                    maxStep: 3,
+                    unit: '%'
+                },
+                co2: {
+                    min: 200,
+                    max: 650,
+                    minStep: 2,
+                    maxStep: 8,
+                    unit: ' ppm'
+                },
+                light: {
+                    min: 0,
+                    max: 3200,
+                    minStep: 10,
+                    maxStep: 50,
+                    unit: ' lux'
+                }
+            };
+            
+            // 生成随机变化值
+            function getRandomStep(min, max, isTemperature = false) {
+                const step = Math.random() * (max - min) + min;
+                return isTemperature ? parseFloat(step.toFixed(1)) : Math.round(step);
+            }
+            
+            // 为每个扩展点击区域添加点击事件
+            document.querySelectorAll('#real-time-monitoring .click-area-container').forEach(container => {
+                container.addEventListener('click', function(e) {
+                    const type = this.getAttribute('data-type');
+                    const rect = this.getBoundingClientRect();
+                    const clickY = e.clientY - rect.top;
+                    const containerHeight = rect.height;
+                    
+                    // 判断点击位置是上方还是下方（上半部分点击增加，下半部分点击减少）
+                    const increase = clickY < containerHeight / 2;
+                    
+                    // 获取当前选中的农田
+                    const currentFarm = farmSelector.getCurrentFarm();
+                    
+                    // 获取当前值
+                    const valueElement = this.querySelector(`.farm-data[data-type="${type}"]`);
+                    let currentValue = parseFloat(valueElement.textContent.replace(/[^0-9.]/g, ''));
+                    
+                    // 获取随机变化值
+                    const isTemperature = type === 'temperature';
+                    const step = getRandomStep(
+                        params[type].minStep, 
+                        params[type].maxStep, 
+                        isTemperature
+                    );
+                    
+                    // 更新值
+                    let newValue = increase ? currentValue + step : currentValue - step;
+                    
+                    // 处理温度的小数精度
+                    if (isTemperature) {
+                        newValue = parseFloat(newValue.toFixed(1));
+                    } else {
+                        newValue = Math.round(newValue);
+                    }
+                    
+                    // 确保在范围内
+                    if (newValue >= params[type].min && newValue <= params[type].max) {
+                        // 更新显示值
+                        valueElement.textContent = `${newValue}${params[type].unit}`;
+                        valueElement.classList.add('value-changing');
+                        
+                        // 更新数据属性，确保切换农田后能保留修改后的值
+                        valueElement.setAttribute(`data-farm-${currentFarm.toLowerCase()}`, `${newValue}${params[type].unit}`);
+                        
+                        // 更新进度条
+                        updateProgressBar(valueElement);
+                        
+                        // 更新历史数据并刷新图表
+                        updateSingleParameterHistory(currentFarm, type, newValue);
+                        refreshChartIfNeeded();
+                        
+                        // 移除动画类，以便下次动画能重新触发
+                        setTimeout(() => {
+                            valueElement.classList.remove('value-changing');
+                        }, 1000);
+                    }
+                });
+            });
+            
+            // 自动小幅波动数据
+            setInterval(() => {
+                // 获取当前选中的农田
+                const currentFarm = farmSelector.getCurrentFarm();
+                
+                Object.keys(params).forEach(type => {
+                    // 找到对应的数据元素
+                    const valueElement = document.querySelector(`.farm-data[data-type="${type}"]`);
+                    if (!valueElement) return;
+                    
+                    // 获取当前值
+                    let currentValue = parseFloat(valueElement.textContent.replace(/[^0-9.]/g, ''));
+                    
+                    // 随机小幅波动
+                    const isTemperature = type === 'temperature';
+                    const step = getRandomStep(
+                        params[type].minStep / 2, 
+                        params[type].maxStep / 2, 
+                        isTemperature
+                    );
+                    const change = (Math.random() > 0.5 ? 1 : -1) * step;
+                    
+                    let newValue = currentValue + change;
+                    
+                    // 处理温度的小数精度
+                    if (isTemperature) {
+                        newValue = parseFloat(newValue.toFixed(1));
+                    } else {
+                        newValue = Math.round(newValue);
+                    }
+                    
+                    // 确保在范围内
+                    if (newValue >= params[type].min && newValue <= params[type].max) {
+                        // 更新显示值
+                        valueElement.textContent = `${newValue}${params[type].unit}`;
+                        valueElement.classList.add('value-changing');
+                        
+                        // 更新数据属性
+                        valueElement.setAttribute(`data-farm-${currentFarm.toLowerCase()}`, `${newValue}${params[type].unit}`);
+                        
+                        // 更新进度条
+                        updateProgressBar(valueElement);
+                        
+                        // 更新历史数据并刷新图表
+                        updateSingleParameterHistory(currentFarm, type, newValue);
+                        
+                        // 移除动画类
+                        setTimeout(() => {
+                            valueElement.classList.remove('value-changing');
+                        }, 1000);
+                    }
+                });
+                
+                // 批量刷新图表（避免频繁更新）
+                refreshChartIfNeeded();
+            }, 3000); // 每3秒自动更新一次
+        }
+        
+        // 历史数据存储对象
+        const historicalData = {
+            A: { temperature: [], humidity: [], soil: [], co2: [], light: [] },
+            B: { temperature: [], humidity: [], soil: [], co2: [], light: [] },
+            C: { temperature: [], humidity: [], soil: [], co2: [], light: [] }
+        };
+
+        // 更新历史数据
+        function updateHistoricalData() {
+            ['A', 'B', 'C'].forEach(farm => {
+                ['temperature', 'humidity', 'soil', 'co2', 'light'].forEach(type => {
+                    const element = document.querySelector(`.farm-data[data-type="${type}"]`);
+                    if (element) {
+                        const currentValue = getCurrentCardValue(element, farm, type);
+                        const now = new Date();
+                        
+                        // 保持历史数据为12个点（一小时，每5分钟一个点）
+                        if (historicalData[farm][type].length >= 12) {
+                            historicalData[farm][type].shift(); // 移除最旧的数据点
+                        }
+                        
+                        historicalData[farm][type].push({
+                            time: `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`,
+                            value: currentValue
+                        });
+                    }
+                });
+            });
+        }
+        
+        // 获取当前卡片的数值
+        function getCurrentCardValue(element, farm, type) {
+            const farmValue = element.getAttribute(`data-farm-${farm.toLowerCase()}`);
+            if (farmValue) {
+                return parseFloat(farmValue.replace(/[^0-9.]/g, ''));
+            }
+            return parseFloat(element.textContent.replace(/[^0-9.]/g, ''));
+        }
+        
+        // 基于当前卡片值生成初始历史数据
+        function generateDataBasedOnCurrentValue(currentValue, count, type) {
+            const data = [];
+            const variance = getVarianceForType(type);
+            
+            for (let i = 0; i < count; i++) {
+                // 在当前值周围小幅波动
+                const variation = (Math.random() - 0.5) * variance * 0.3;
+                let value = currentValue + variation;
+                
+                // 确保数值合理
+                if (type === 'temperature') {
+                    value = Math.max(15, Math.min(35, value));
+                    value = parseFloat(value.toFixed(1));
+                } else if (type === 'humidity' || type === 'soil') {
+                    value = Math.max(20, Math.min(95, value));
+                    value = Math.round(value);
+                } else if (type === 'co2') {
+                    value = Math.max(200, Math.min(650, value));
+                    value = Math.round(value);
+                } else if (type === 'light') {
+                    value = Math.max(0, Math.min(3200, value));
+                    value = Math.round(value);
+                }
+                
+                data.push(value);
+            }
+            return data;
+        }
+        
+        // 获取不同类型的波动范围
+        function getVarianceForType(type) {
+            const variances = {
+                temperature: 2,
+                humidity: 5,
+                soil: 5,
+                co2: 20,
+                light: 100
+            };
+            return variances[type] || 1;
+        }
+        
+        // 更新单个参数的历史数据
+        function updateSingleParameterHistory(farm, type, newValue) {
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            // 更新最新的数据点，而不是简单添加新点
+            const dataArray = historicalData[farm][type];
+            if (dataArray.length > 0) {
+                // 更新最后一个数据点的值
+                dataArray[dataArray.length - 1].value = newValue;
+            } else {
+                // 如果没有数据，添加新点
+                dataArray.push({
+                    time: timeStr,
+                    value: newValue
+                });
+            }
+        }
+        
+        // 刷新图表（实时更新当前数据点）
+        function refreshChartIfNeeded() {
+            const activeRange = document.querySelector('.time-tab.tab-active');
+            const activeType = document.querySelector('.chart-btn.bg-primary');
+            const currentFarm = document.querySelector('.farm-select-btn.bg-primary');
+            
+            if (activeRange && activeType && currentFarm && window.chart) {
+                const rangeValue = activeRange.getAttribute('data-range');
+                const typeValue = activeType.getAttribute('data-type');
+                const farmValue = currentFarm.getAttribute('data-farm');
+                
+                // 实时更新图表数据
+                updateChartData(typeValue, rangeValue, farmValue);
+            }
+        }
+        
+        // 更新图表数据（不重新创建图表）
+        function updateChartData(type, range, farm) {
+            if (!window.chart) return;
+            
+            let data, labels, dataUnit = '';
+            
+            if (range === 'hour') {
+                // 使用历史数据
+                const farmData = historicalData[farm][type];
+                data = farmData.map(item => item.value);
+                labels = farmData.map(item => item.time);
+            } else {
+                // 其他时间范围的数据生成逻辑保持不变
+                const features = window.farmDataFeatures[farm];
+                if (!features) return;
+                
+                const feature = features[type];
+                data = generateDataForRange(feature, range, type);
+                labels = generateLabelsForRange(range);
+            }
+            
+            // 设置数据单位
+            switch(type) {
+                case 'temperature': dataUnit = '°C'; break;
+                case 'humidity': 
+                case 'soil': dataUnit = '%'; break;
+                case 'co2': dataUnit = ' ppm'; break;
+                case 'light': dataUnit = ' lux'; break;
+            }
+            
+            // 更新图表数据
+            window.chart.data.labels = labels;
+            window.chart.data.datasets[0].data = data;
+            window.chart.data.datasets[0].label = `${getTypeDisplayName(type)} (${dataUnit})`;
+            
+            // 更新图表样式
+            const colors = getColorForType(type);
+            window.chart.data.datasets[0].borderColor = colors.border;
+            window.chart.data.datasets[0].backgroundColor = colors.background;
+            
+            // 执行图表更新动画
+            window.chart.update('active');
+            
+            // 更新数据指标
+            updateIndicatorsForData(data, type, dataUnit);
+        }
+        
+        // 生成不同时间范围的数据
+        function generateDataForRange(feature, range, type) {
+            const { base, variance } = feature;
+            let data = [];
+            let count;
+            
+            switch(range) {
+                case '3days': count = 3; break;
+                case 'week': count = 7; break;
+                case '15days': count = 15; break;
+                case 'month': count = 30; break;
+                default: count = 12; break; // hour
+            }
+            
+            for (let i = 0; i < count; i++) {
+                let value = base + (Math.random() - 0.5) * variance;
+                
+                // 确保数值在合理范围内
+                if (type === 'temperature') {
+                    value = Math.max(15, Math.min(35, parseFloat(value.toFixed(1))));
+                } else if (type === 'humidity' || type === 'soil') {
+                    value = Math.max(20, Math.min(95, Math.round(value)));
+                } else if (type === 'co2') {
+                    value = Math.max(200, Math.min(650, Math.round(value)));
+                } else if (type === 'light') {
+                    value = Math.max(0, Math.min(3200, Math.round(value)));
+                }
+                
+                data.push(value);
+            }
+            return data;
+        }
+        
+        // 生成不同时间范围的标签
+        function generateLabelsForRange(range) {
+            const now = new Date();
+            let labels = [];
+            
+            switch(range) {
+                case '3days':
+                    for (let i = 2; i >= 0; i--) {
+                        const date = new Date(now);
+                        date.setDate(date.getDate() - i);
+                        labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+                    }
+                    break;
+                case 'week':
+                    const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                    for (let i = 6; i >= 0; i--) {
+                        const date = new Date(now);
+                        date.setDate(date.getDate() - i);
+                        labels.push(dayNames[date.getDay()]);
+                    }
+                    break;
+                case '15days':
+                    for (let i = 14; i >= 0; i--) {
+                        const date = new Date(now);
+                        date.setDate(date.getDate() - i);
+                        labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+                    }
+                    break;
+                case 'month':
+                    for (let i = 29; i >= 0; i--) {
+                        const date = new Date(now);
+                        date.setDate(date.getDate() - i);
+                        labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+                    }
+                    break;
+                default: // hour
+                    for (let i = 11; i >= 0; i--) {
+                        const time = new Date(now);
+                        time.setMinutes(time.getMinutes() - (i * 5));
+                        const hour = time.getHours();
+                        const minute = time.getMinutes();
+                        labels.push(`${hour}:${minute.toString().padStart(2, '0')}`);
+                    }
+                    break;
+            }
+            return labels;
+        }
+        
+        // 获取类型显示名称
+        function getTypeDisplayName(type) {
+            const names = {
+                temperature: '温度',
+                humidity: '湿度',
+                soil: '土壤湿度',
+                co2: 'CO₂浓度',
+                light: '光照强度'
+            };
+            return names[type] || type;
+        }
+        
+        // 获取类型对应的颜色
+        function getColorForType(type) {
+            const colors = {
+                temperature: {
+                    border: 'rgb(239, 68, 68)',
+                    background: 'rgba(239, 68, 68, 0.1)'
+                },
+                humidity: {
+                    border: 'rgb(59, 130, 246)',
+                    background: 'rgba(59, 130, 246, 0.1)'
+                },
+                soil: {
+                    border: 'rgb(217, 119, 6)',
+                    background: 'rgba(217, 119, 6, 0.1)'
+                },
+                co2: {
+                    border: 'rgb(147, 51, 234)',
+                    background: 'rgba(147, 51, 234, 0.1)'
+                },
+                light: {
+                    border: 'rgb(245, 158, 11)',
+                    background: 'rgba(245, 158, 11, 0.1)'
+                }
+            };
+            return colors[type] || colors.temperature;
+        }
+        
+        // 更新数据指标
+        function updateIndicatorsForData(data, type, unit) {
+            const maxTempEl = document.getElementById('max-temperature');
+            const avgHumidityEl = document.getElementById('avg-humidity');
+            const maxCo2El = document.getElementById('max-co2');
+            const maxLightEl = document.getElementById('max-light');
+            
+            const max = Math.max(...data);
+            const min = Math.min(...data);
+            const avg = data.reduce((a, b) => a + b, 0) / data.length;
+            
+            // 根据当前显示的数据类型更新指标
+            switch(type) {
+                case 'temperature':
+                    maxTempEl.textContent = `${max}${unit}`;
+                    break;
+                case 'humidity':
+                    avgHumidityEl.textContent = `${Math.round(avg)}${unit}`;
+                    break;
+                case 'co2':
+                    maxCo2El.textContent = `${Math.round(max)}${unit}`;
+                    break;
+                case 'light':
+                    maxLightEl.textContent = `${Math.round(max)}${unit}`;
+                    break;
+            }
+        }
+
+        // 初始化图表和数据指标
+        function initChart() {
+            const ctx = document.getElementById('data-chart').getContext('2d');
+            
+            // 为每个农田预定义不同的数据特征
+            window.farmDataFeatures = {
+                A: {
+                    temperature: { base: 22, variance: 4 },
+                    humidity: { base: 65, variance: 10 },
+                    soil: { base: 60, variance: 12 },
+                    co2: { base: 350, variance: 50 },
+                    light: { base: 1200, variance: 500 }
+                },
+                B: {
+                    temperature: { base: 24, variance: 5 },
+                    humidity: { base: 55, variance: 15 },
+                    soil: { base: 50, variance: 10 },
+                    co2: { base: 380, variance: 60 },
+                    light: { base: 1000, variance: 400 }
+                },
+                C: {
+                    temperature: { base: 23, variance: 3 },
+                    humidity: { base: 70, variance: 8 },
+                    soil: { base: 65, variance: 8 },
+                    co2: { base: 360, variance: 40 },
+                    light: { base: 1400, variance: 600 }
+                }
+            };
+            
+            // 获取当前选中的农田
+            let currentFarm = document.querySelector('.farm-select-btn.bg-primary').getAttribute('data-farm');
+            
+            // 生成近一小时的时间标签
+            const nowInit = new Date();
+            const currentMinuteInit = nowInit.getMinutes();
+            const hoursInit = [];
+            for (let i = 11; i >= 0; i--) {
+                const time = new Date(nowInit);
+                time.setMinutes(currentMinuteInit - (i * 5));
+                const hour = time.getHours();
+                const minute = time.getMinutes();
+                hoursInit.push(`${hour}:${minute.toString().padStart(2, '0')}`);
+            }
+            
+            // 初始化所有农田的历史数据
+            ['A', 'B', 'C'].forEach(farm => {
+                ['temperature', 'humidity', 'soil', 'co2', 'light'].forEach(type => {
+                    const element = document.querySelector(`.farm-data[data-type="${type}"]`);
+                    const currentValue = getCurrentCardValue(element, farm, type);
+                    const historyData = generateDataBasedOnCurrentValue(currentValue, 12, type);
+                    
+                    // 存储历史数据
+                    historicalData[farm][type] = historyData.map((value, index) => ({
+                        time: hoursInit[index],
+                        value: value
+                    }));
+                });
+            });
+            
+            const initialData = historicalData[currentFarm]['temperature'].map(item => item.value);
+            
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hoursInit,
+                    datasets: [{
+                        label: '温度 (°C)',
+                        data: initialData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            min: 15,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverBackgroundColor: 'rgba(34, 197, 94, 0.8)'
+                        }
+                    },
+                    animation: {
+                        duration: 750,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+            
+            // 将图表对象存储到全局变量中
+            window.chart = chart;
+            
+            // 图表数据切换功能
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 更新按钮样式
+                    document.querySelectorAll('.chart-btn').forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('bg-gray-100', 'text-gray-800');
+                    });
+                    this.classList.add('bg-primary', 'text-white');
+                    this.classList.remove('bg-gray-100', 'text-gray-800');
+                    
+                    // 获取当前选中的时间范围和农田
+                    const activeRange = document.querySelector('.time-tab.tab-active').getAttribute('data-range');
+                    const currentFarm = document.querySelector('.farm-select-btn.bg-primary').getAttribute('data-farm');
+                    const type = this.getAttribute('data-type');
+                    
+                    updateChartData(type, activeRange, currentFarm);
+                });
+            });
+            
+            // 时间范围标签点击事件
+            document.querySelectorAll('.time-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 更新标签样式
+                    document.querySelectorAll('.time-tab').forEach(t => {
+                        t.classList.remove('tab-active');
+                    });
+                    this.classList.add('tab-active');
+                    
+                    // 获取当前状态
+                    const range = this.getAttribute('data-range');
+                    const type = document.querySelector('.chart-btn.bg-primary').getAttribute('data-type');
+                    const farm = document.querySelector('.farm-select-btn.bg-primary').getAttribute('data-farm');
+                    
+                    updateChartData(type, range, farm);
+                });
+            });
+            
+            // 暴露给外部的函数：根据农田更新图表
+            window.updateChartForFarm = function(farm) {
+                const activeType = document.querySelector('.chart-btn.bg-primary').getAttribute('data-type');
+                const activeRange = document.querySelector('.time-tab.tab-active').getAttribute('data-range');
+                updateChartData(activeType, activeRange, farm);
+            };
+        }
+        
+        // 处理从中间页面传递过来的农田选择数据
+        function handleFarmSelectionData() {
+            try {
+                // 检查URL参数
+                const urlParams = new URLSearchParams(window.location.search);
+                const fromSelection = urlParams.get('from') === 'selection';
+                const selectedFarmIds = urlParams.get('farms');
+                
+                // 检查localStorage中的数据
+                const storedData = localStorage.getItem('farmSelectionData');
+                
+                if (fromSelection && selectedFarmIds && storedData) {
+                    const farmData = JSON.parse(storedData);
+                    
+                    // 调试信息
+                    console.log('检测到农田选择数据:', farmData);
+                    console.log('选中的农田ID:', selectedFarmIds);
+                    
+                    // 清理URL参数（可选）
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    // 应用农田选择数据
+                    applyFarmSelectionData(farmData);
+                    
+                    // 显示选择确认消息
+                    showSelectionConfirmation(farmData);
+                    
+                    // 清理存储的数据（防止重复应用）
+                    localStorage.removeItem('farmSelectionData');
+                }
+            } catch (error) {
+                console.warn('处理农田选择数据时出错:', error);
+            }
+        }
+        
+        // 应用农田选择数据到主页
+        function applyFarmSelectionData(farmData) {
+            console.log('接收到的农田数据:', farmData);
+            if (!farmData || !farmData.selectedFarms) return;
+            
+            // 更新农田选择器的默认选中状态
+            const firstSelectedFarm = farmData.selectedFarms[0];
+            if (firstSelectedFarm) {
+                console.log('第一个选中的农田:', firstSelectedFarm);
+                // 根据农田ID映射到A、B、C
+                const farmMapping = {'1': 'A', '2': 'B', '3': 'C'};
+                const farmLetter = farmMapping[firstSelectedFarm.id];
+                
+                if (farmLetter) {
+                    // 更新农田选择按钮状态
+                    document.querySelectorAll('.farm-select-btn').forEach(btn => {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('bg-white', 'text-gray-500');
+                    });
+                    
+                    const targetBtn = document.querySelector(`.farm-select-btn[data-farm="${farmLetter}"]`);
+                    if (targetBtn) {
+                        targetBtn.classList.add('bg-primary', 'text-white');
+                        targetBtn.classList.remove('bg-white', 'text-gray-500');
+                        
+                        // 触发农田数据更新
+                        updateFarmData(farmLetter);
+                        updateChartForFarm(farmLetter);
+                    }
+                }
+            }
+            
+            // 更新农田数据分析卡片
+            updateFarmAnalysisCards(farmData);
+            
+            // 可以根据需要进一步定制环境参数数据
+            customizeEnvironmentData(farmData);
+        }
+        
+        // 更新农田数据分析卡片
+        function updateFarmAnalysisCards(farmData) {
+            console.log('更新农田数据分析卡片，数据:', farmData);
+            if (!farmData || !farmData.selectedFarms) return;
+            
+            const farmAnalysisCards = document.querySelectorAll('.farm-analysis-card');
+            console.log('找到农田分析卡片数量:', farmAnalysisCards.length);
+            
+            farmData.selectedFarms.forEach((farm, index) => {
+                console.log(`处理农田 ${index}:`, farm);
+                if (index < farmAnalysisCards.length) {
+                    const card = farmAnalysisCards[index];
+                    const crop = farm.selectedCrop;
+                    console.log(`农田 ${index} 的选中作物:`, crop);
+                    
+                    if (crop) {
+                        // 更新作物名称
+                        const cropNameElement = card.querySelector('.crop-name');
+                        if (cropNameElement) {
+                            console.log(`更新作物名称: ${crop.name}`);
+                            cropNameElement.textContent = crop.name;
+                        }
+                        
+                        // 更新作物图片
+                        const cropImageElement = card.querySelector('.crop-image');
+                        if (cropImageElement) {
+                            console.log(`更新作物图片: ${crop.image}`);
+                            cropImageElement.src = crop.image;
+                            cropImageElement.alt = crop.name;
+                        }
+                        
+                        // 更新农田标签
+                        const farmLabelElement = card.querySelector('.farm-label');
+                        if (farmLabelElement) {
+                            console.log(`更新农田标签: ${farm.name}`);
+                            farmLabelElement.textContent = farm.name;
+                        }
+                        
+                        // 更新生长状态
+                        const growthStatusElement = card.querySelector('.growth-status');
+                        if (growthStatusElement) {
+                            const growthStages = ['幼苗期', '生长期', '开花期', '结果期', '成熟期'];
+                            const randomStage = growthStages[Math.floor(Math.random() * growthStages.length)];
+                            console.log(`更新生长状态: ${randomStage}`);
+                            growthStatusElement.textContent = randomStage;
+                        }
+                        
+                        // 更新种植天数
+                        const plantingDaysElement = card.querySelector('.planting-days');
+                        if (plantingDaysElement) {
+                            const randomDays = Math.floor(Math.random() * 90) + 1;
+                            console.log(`更新种植天数: ${randomDays}天`);
+                            plantingDaysElement.textContent = `${randomDays}天`;
+                        }
+                        
+                        // 可以添加基于作物类型的特殊数据更新
+                        updateCropSpecificData(card, crop);
+                    }
+                }
+            });
+        }
+        
+        // 根据作物类型更新特定数据
+        function updateCropSpecificData(card, crop) {
+            // 可以根据不同作物类型设置不同的环境参数或生长数据
+            const cropSpecificData = {
+                '冬小麦': { optimalTemp: '15-22°C', waterNeed: '中等', growthCycle: '180-220天' },
+                '番茄': { optimalTemp: '20-25°C', waterNeed: '较高', growthCycle: '120-140天' },
+                '胡萝卜': { optimalTemp: '16-20°C', waterNeed: '中等', growthCycle: '90-120天' },
+                '小白菜': { optimalTemp: '15-20°C', waterNeed: '较高', growthCycle: '30-45天' },
+                '小葱': { optimalTemp: '15-25°C', waterNeed: '中等', growthCycle: '60-80天' },
+                '红薯': { optimalTemp: '22-28°C', waterNeed: '中等', growthCycle: '120-150天' }
+            };
+            
+            const specificData = cropSpecificData[crop.name];
+            if (specificData) {
+                // 可以在这里添加更多基于作物的特定更新逻辑
+                console.log(`${crop.name}的特定数据:`, specificData);
+            }
+        }
+        
+        // 根据选择的作物定制环境参数数据
+        function customizeEnvironmentData(farmData) {
+            farmData.selectedFarms.forEach(farm => {
+                const farmLetter = {'1': 'A', '2': 'B', '3': 'C'}[farm.id];
+                if (!farmLetter) return;
+                
+                // 根据选择的作物调整环境参数基础值
+                farm.crops.forEach(crop => {
+                    // 根据不同作物调整参数
+                    adjustParametersForCrop(farmLetter, crop);
+                });
+            });
+        }
+        
+        // 根据作物类型调整环境参数
+        function adjustParametersForCrop(farmLetter, crop) {
+            const cropEnvironmentSettings = {
+                '小麦': { temp: 18, humidity: 65, soil: 60, co2: 380, light: 1300 },
+                '小白菜': { temp: 22, humidity: 75, soil: 70, co2: 400, light: 1100 },
+                '小葱': { temp: 20, humidity: 65, soil: 65, co2: 360, light: 1200 },
+                '胡萝卜': { temp: 19, humidity: 65, soil: 58, co2: 370, light: 1400 },
+                '红薯': { temp: 25, humidity: 55, soil: 50, co2: 350, light: 1600 },
+                '番茄': { temp: 24, humidity: 65, soil: 65, co2: 420, light: 1800 }
+            };
+            
+            const settings = cropEnvironmentSettings[crop];
+            if (!settings) return;
+            
+            // 更新对应农田的环境参数显示值
+            const farmSuffix = farmLetter.toLowerCase();
+            
+            // 更新温度
+            const tempElement = document.querySelector('.farm-data[data-type="temperature"]');
+            if (tempElement) {
+                const newTemp = settings.temp + (Math.random() * 4 - 2); // 添加随机波动
+                tempElement.setAttribute(`data-farm-${farmSuffix}`, `${newTemp.toFixed(1)}°C`);
+            }
+            
+            // 更新湿度
+            const humidityElement = document.querySelector('.farm-data[data-type="humidity"]');
+            if (humidityElement) {
+                const newHumidity = settings.humidity + Math.round(Math.random() * 10 - 5);
+                humidityElement.setAttribute(`data-farm-${farmSuffix}`, `${newHumidity}%`);
+            }
+            
+            // 更新土壤湿度
+            const soilElement = document.querySelector('.farm-data[data-type="soil"]');
+            if (soilElement) {
+                const newSoil = settings.soil + Math.round(Math.random() * 8 - 4);
+                soilElement.setAttribute(`data-farm-${farmSuffix}`, `${newSoil}%`);
+            }
+            
+            // 更新CO2浓度
+            const co2Element = document.querySelector('.farm-data[data-type="co2"]');
+            if (co2Element) {
+                const newCo2 = settings.co2 + Math.round(Math.random() * 40 - 20);
+                co2Element.setAttribute(`data-farm-${farmSuffix}`, `${newCo2} ppm`);
+            }
+            
+            // 更新光照强度
+            const lightElement = document.querySelector('.farm-data[data-type="light"]');
+            if (lightElement) {
+                const newLight = settings.light + Math.round(Math.random() * 300 - 150);
+                lightElement.setAttribute(`data-farm-${farmSuffix}`, `${newLight} lux`);
+            }
+        }
+        
+        // 显示选择确认消息
+        function showSelectionConfirmation(farmData) {
+            // 创建确认消息元素
+            const confirmationDiv = document.createElement('div');
+            confirmationDiv.className = 'fixed top-20 right-4 bg-white border-l-4 border-primary shadow-lg rounded-lg p-4 max-w-sm z-50 slide-up';
+            confirmationDiv.style.animation = 'slideInRight 0.5s ease-out';
+            
+            let cropsInfo = '';
+            farmData.selectedFarms.forEach(farm => {
+                const farmNames = {'1': '一号农田', '2': '二号农田', '3': '三号农田'};
+                cropsInfo += `<div class="text-sm"><strong>${farmNames[farm.id]}:</strong> ${farm.crops.join('、')}</div>`;
+            });
+            
+            confirmationDiv.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-check-circle text-primary text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">农田配置已应用</p>
+                        <div class="mt-1 text-xs text-gray-600">
+                            ${cropsInfo}
+                        </div>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="mt-2 text-xs text-primary hover:text-primary/80">
+                            知道了
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(confirmationDiv);
+            
+            // 5秒后自动移除
+            setTimeout(() => {
+                if (confirmationDiv.parentNode) {
+                    confirmationDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', function() {
+            // 首先处理农田选择数据
+            handleFarmSelectionData();
+            const farmSelector = initFarmSelection();
+            initRealTimeData(farmSelector);
+            initChart();
+            updateNavActiveState();
+            
+            // 确保图表与卡片数据保持同步
+            setTimeout(() => {
+                if (window.chart && window.updateChartForFarm) {
+                    const currentFarm = document.querySelector('.farm-select-btn.bg-primary').getAttribute('data-farm');
+                    window.updateChartForFarm(currentFarm);
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
